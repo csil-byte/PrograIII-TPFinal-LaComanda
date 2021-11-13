@@ -2,9 +2,49 @@
 
 class Usuario
 {
-    public $id;
+    public $id_usuario;
     public $usuario;
     public $clave;
+    public $nombre_usuario;
+    public $cantidad_operaciones;
+    public $estado; // 0 = inactivo, 1 = activo 
+    public $tipo_usuario; // 0 = administrador, 1 = usuario normal
+    public $fecha_registro;
+    public $fecha_ultimo_ingreso;
+    public $fecha_ultima_salida;
+    public $ultimo_login;
+
+    public static function Login($user, $clave)
+    {
+        $objetoAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objetoAccesoDato->prepararConsulta("SELECT U.id_tipo, U.id_usuario, U.nombre_usuario, tipo.nombre FROM usuario as U INNER JOIN tipo ON U.id_tipo = tipo.id_tipo WHERE U.usuario = :user AND U.clave = :clave");
+
+        $consulta->execute(array(":user" => $user, ":clave" => $clave));
+
+        $resultado = $consulta->fetch();
+        return $resultado;
+    }
+
+    public static function Echo()
+    {
+        echo ("<br>Usuario: " . 'hola, funciona' . "<br>");
+    }
+
+    ///Actualiza la ultima fecha de logueo de los empleados.
+    public static function ActualizarFechaLogin($id_usuario)
+    {
+        $objetoAccesoDato = AccesoDatos::obtenerInstancia();
+
+        date_default_timezone_set("America/Argentina/Buenos_Aires");
+        $fecha = date('Y-m-d H:i:s');
+
+        $consulta = $objetoAccesoDato->prepararConsulta("UPDATE usuario SET fecha_ultimo_login = :fecha WHERE id_usuario = :id");
+
+        $consulta->bindValue(':fecha', $fecha, PDO::PARAM_STR);
+        $consulta->bindValue(':id', $id_usuario, PDO::PARAM_INT);
+
+        $consulta->execute();
+    }
 
     public function crearUsuario()
     {
@@ -21,7 +61,7 @@ class Usuario
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, clave FROM usuarios");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_empleado, usuario, clave, id_tipo, nombre_empleado, cantidad_operaciones, estado  FROM empleado");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
@@ -30,8 +70,8 @@ class Usuario
     public static function obtenerUsuario($usuario)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, clave FROM usuarios WHERE usuario = :usuario");
-        $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_empleado, usuario, clave FROM empleado WHERE usuario = :empleado");
+        $consulta->bindValue(':empleado', $usuario, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchObject('Usuario');

@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS `empleado` (
   `id_tipo` int(11) NOT NULL,
   `nombre_empleado` varchar(50) NOT NULL,
   `cantidad_operaciones` int(11) DEFAULT '0',
+  `estado` int(11) NOT NULL, /* 1 activo, 0 inactivo*/
   PRIMARY KEY (`id_empleado`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -41,11 +42,37 @@ CREATE TABLE IF NOT EXISTS `empleado` (
 -- Volcado de datos para la tabla `empleado`
 --
 
-INSERT INTO `empleado` (`id_empleado`, `usuario`, `clave`, `id_tipo`, `nombre_empleado`, `cantidad_operaciones` ) VALUES
-(1, 'francoP', 'Hsu23sDsjseWs', 4,  'Franco'),
-(2, 'pedroF', 'dasdqsdw2sd23', 1, 'Pedro'),
-(3, 'jorgeL', 'sda2s2f332f2', 2,  'Jorge'),
-(4, 'lauraN', 'jdfj3442', 3, 'Laura');
+INSERT INTO `empleado` (`id_empleado`, `usuario`, `clave`, `id_tipo`, `nombre_empleado`, `cantidad_operaciones`, 'estado') VALUES
+(1, 'francoP', 'Hsu23sDsjseWs', 4,  'Franco', 1, 1),
+(2, 'pedroF', 'dasdqsdw2sd23', 1, 'Pedro', 1, 1),
+(3, 'jorgeL', 'sda2s2f332f2', 2,  'Jorge', 1, 1 ),
+(4, 'lauraN', 'jdfj3442', 3, 'Laura', 1, 1),
+(5, 'admin', 'admin', 1, 'Administrador', 1, 1),
+(6, 'admin', 'admin', 2, 'Administrador',2,  0),
+(7, 'admin', 'admin', 3, 'Administrador', 4,0),
+(8, 'admin', 'admin', 4, 'Administrador', 3, 0);
+
+
+--
+-- Estructura de tabla para la tabla `tipo`
+--
+DROP TABLE IF EXISTS `tipo`;
+CREATE TABLE IF NOT EXISTS `tipo` (
+  `id_tipo` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_tipo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `empleado`
+--
+
+INSERT INTO 'tipo' ('id_tipo', 'nombre') VALUES
+(1, 'Bartender'),
+(2, 'Cervecero'),
+(3, 'Cocinero'),
+(4, 'Mozo'),
+(5, 'Socio');
 
 
 --
@@ -73,12 +100,12 @@ CREATE TABLE IF NOT EXISTS `producto` (
   `id_producto` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
   `precio` int(11) NOT NULL,
-  `sector` int(11) NOT NULL,
+  `id_sector` int(11) NOT NULL,
   `tiempo_preparacion` int(11) DEFAULT '1',
   PRIMARY KEY (`id_producto`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO 'producto' ('id_producto', 'nombre','precio','tipo','tiempo_preparacion') VALUES
+INSERT INTO 'producto' ('id_producto', 'nombre','precio','id_sector','tiempo_preparacion') VALUES
 (1, 'Pasta', 800,3, 25),
 (2, 'Pizza', 1000,3, 30),
 (3, 'Hamburguesa', 500,3, 20),
@@ -147,9 +174,9 @@ CREATE TABLE 'pedido' (
   `hora_inicial` time NOT NULL,
   `hora_entrega_estimada` time DEFAULT NULL,
   `hora_entrega_real` time DEFAULT NULL,
-  'minutos_estimados' int (11) NOT NULL,
-  'id_mozo' int (11) NOT NULL,
-  'id_cocinero' int (11) NOT NULL,
+  `minutos_estimados` int(11) NOT NULL,
+  `id_mozo` int(11) NOT NULL,
+  `id_cocinero` int(11) NOT NULL,
   PRIMARY KEY (`id_pedido`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
