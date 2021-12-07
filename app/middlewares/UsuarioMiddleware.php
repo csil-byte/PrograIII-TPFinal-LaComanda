@@ -1,6 +1,8 @@
 <?php
 
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Slim\Handlers\Strategies\RequestHandler;
 
 require_once './middlewares/AutentificadorJWT.php';
 class UsuarioMiddleware
@@ -59,14 +61,10 @@ class UsuarioMiddleware
 
     public static function ValidarToken($request, $handler)
     {
-
-
         $response = new Response();
         $header = $request->getHeaderLine('Authorization');
         $token = trim(explode("Bearer", $header)[1]);
         $esValido = false;
-
-
         try {
 
             AutentificadorJWT::VerificarToken($token);
@@ -79,7 +77,7 @@ class UsuarioMiddleware
         }
         if ($esValido) {
             $response = $handler->handle($request);
-            echo ("<br>Token valido</br>");
+            echo ("");
             $payload = json_encode(array('valid' => $esValido));
         }
         $response->getBody()->write($payload);

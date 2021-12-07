@@ -19,6 +19,17 @@ class ProductoApi extends Producto implements IApiUsable
             ->withHeader('Content-Type', 'application/json');
     }
 
+    public function TraerTodos_PorSector($request, $response, $args)
+    {
+        echo $args['sector'] . "<br>";
+        $lista = Producto::obtenerPor_Sector($args['sector']);
+        $payload = json_encode(array("Lista de productos: " => $lista));
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
     public function CargarUno($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
@@ -37,9 +48,9 @@ class ProductoApi extends Producto implements IApiUsable
         $producto->tiempo_preparacion = $tiempo_preparacion;
 
         if ($producto->crearProducto() != 0) {
-            $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
+            $payload = json_encode(array("mensaje" => "Producto creado con exito"));
         } else {
-            $payload = json_encode(array("mensaje" => "Error al crear el usuario"));
+            $payload = json_encode(array("mensaje" => "Error al crear el Producto"));
         }
 
         $response->getBody()->write($payload);
@@ -53,12 +64,12 @@ class ProductoApi extends Producto implements IApiUsable
     {
         $productoModificar = $args['id_producto'];
         $producto = Producto::obtenerProducto_idProducto($productoModificar);
-
+var_dump($producto);
         if ($producto != null) {
             Producto::borrarProducto($producto->id_producto);
-            $payload = json_encode(array("mensaPe" => "UsPario borrado con exito"));
+            $payload = json_encode(array("mensaje" => "Producto borrado con exito"));
         } else {
-            $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
+            $payload = json_encode(array("mensaje" => "Error al borrar el Producto"));
         }
         $response->getBody()->write($payload);
         return $response
@@ -83,9 +94,9 @@ class ProductoApi extends Producto implements IApiUsable
             $producto->tiempo_preparacion = $tiempo_preparacion;
 
             Producto::modificarProducto($producto);
-            $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
+            $payload = json_encode(array("mensaje" => "Producto modificado con exito"));
         } else {
-            $payload = json_encode(array("mensaje" => "Error al modificar el usuario"));
+            $payload = json_encode(array("mensaje" => "Error al modificar el Producto"));
         }
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');

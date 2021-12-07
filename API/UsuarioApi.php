@@ -3,11 +3,160 @@
 //include Usuario class
 include_once '../app/middlewares/AutentificadorJWT.php';
 include_once '../app/models/Usuario.php';
+require_once './interfaces/IApiUsable.php';
 
 
-class UsuarioApi extends Usuario
+class UsuarioApi extends Usuario implements IApiUsable
+
+#region ABM
 {
-    //Constructor
+
+    public function TraerTodos($request, $response, $args)
+    {
+
+        $objetos = Usuario::obtenerTodos();
+        $payload = json_encode(array("Lista: " => $objetos));
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function TraerTodos_PorTipo($request, $response, $args)
+    {
+        $identificador = $args['identificador'];
+        $usuarios = Usuario::obtenerPor_Tipo($identificador);
+        $payload = json_encode(array("Lista: " => $usuarios));
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function CargarUno($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+
+
+        $usuario = $parametros['usuario'];
+        $clave = $parametros['clave'];
+        $id_tipo = $parametros['id_tipo'];
+        $nombre_usuario = $parametros['nombre_usuario'];
+        $estado = $parametros['estado'];
+        $fecha_registro = $parametros['fecha_registro'];
+
+
+        $objeto = new Usuario();
+
+        $objeto->usuario = $usuario;
+        $objeto->clave = $clave;
+        $objeto->id_tipo = $id_tipo;
+        $objeto->nombre_usuario = $nombre_usuario;
+        $objeto->estado = $estado;
+        $objeto->fecha_registro = $fecha_registro;
+
+
+
+        if ($objeto->crearUsuario() == true) {
+            $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Error al crear el usuario"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function TraerUno($request, $response, $args)
+    {
+        // $id = $args['id'];
+        // $usuario = Usuario::TraerUno($id);
+        // $newResponse = $response->withJson($usuario, 200);
+        // return $newResponse;
+    }
+    public function BorrarUno($request, $response, $args)
+    {
+        //cambiarEstado_Usuario
+        $objModificar = $args['identificador'];
+        $estado = $args['estado'];
+        $obj = Usuario::obtenerPor_Id($objModificar);
+
+        if ($obj != null) {
+            Usuario::cambiarEstado_Usuario($obj, $estado);
+            $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
+        }
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ModificarUno($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $objetoModificar = $args['identificador'];
+        $usuario = $parametros['usuario'];
+        $clave = $parametros['clave'];
+        $id_tipo = $parametros['id_tipo'];
+        $nombre_usuario = $parametros['nombre_usuario'];
+        $estado = $parametros['estado'];
+        $fecha_registro = $parametros['fecha_registro'];
+        $fecha_ultimo_login = $parametros['fecha_ultimo_login'];
+
+
+        $objeto = Usuario::obtenerPor_Id($objetoModificar);
+
+        if ($objeto != null) {
+            $objeto->usuario = $usuario;
+            $objeto->clave = $clave;
+            $objeto->id_tipo = $id_tipo;
+            $objeto->nombre_usuario = $nombre_usuario;
+            $objeto->estado = $estado;
+            $objeto->fecha_registro = $fecha_registro;
+            $objeto->fecha_ultimo_login = $fecha_ultimo_login;
+
+
+            Usuario::modificarUsuario($objeto);
+            $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Error al modificar el usuario"));
+        }
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+    #endregion
+
+    /*
+    7- De los empleados:
+            a- Los días y horarios que se ingresaron al sistema.
+ */
+    public function Traer_IngresoSistema($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $fecha1 = $parametros['fecha1'];
+        $fecha2 = $parametros['fecha2'];
+        $lista = Usuario::get_ingresos($fecha1, $fecha2);
+
+        if (count($lista) == 0) {
+            $payload = json_encode(array("mensaje" => "No hay ingresos para esas fechas"));
+        } else {
+            foreach ($lista as $item) {
+                echo ('<tr>');
+                echo ('<td>' . $item->usuario . '</td>');
+                echo ('<td>' . $item->nombre_usuario . '</td>');
+                echo ('<td>' . $item->fecha_ultimo_login . '</td>');
+            }
+            $payload = json_encode("Ingresos devueltos");
+        }
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+
+
+
 
     public function Login_Usuario($request, $response, $args)
     {
@@ -24,43 +173,25 @@ class UsuarioApi extends Usuario
         } else {
             $respuesta = json_encode(array(["Estado" => "ERROR", "Mensaje" => "Usuario o clave invalidos."]));
         }
-        //  $newResponse = $response->withJson([$respuesta, 200]);
         $response->getBody()->write($respuesta);
-        // return $response->withHeader('Content-Type', 'application/json');
         return $response;
     }
 
-    // //Get all Usuarios
-    // public function getAll()
-    // {
-    //     $resultSet = $this->getAllRecords();
-    //     $data = array();
-    //     $i = 0;
-    //     while ($row = $resultSet->fetch_assoc()) {
-    //         $data[$i]['id'] = $row['id'];
-    //         $data[$i]['nombre'] = $row['nombre'];
-    //         $data[$i]['apellido'] = $row['apellido'];
-    //         $data[$i]['email'] = $row['email'];
-    //         $data[$i]['password'] = $row['password'];
-    //         $data[$i]['fecha_nacimiento'] = $row['fecha_nacimiento'];
-    //         $data[$i]['telefono'] = $row['telefono'];
-    //         $data[$i]['direccion'] = $row['direccion'];
-    //         $data[$i]['foto'] = $row['foto'];
-    //         $data[$i]['id_tipo'] = $row['id_tipo'];
-    //         $i++;
-    //     }
-    //     return $data;
-    // }
+    public function Suspender_Usuario($request, $response, $args)
+    {
 
-    //Get Usuario by id
-    //     public function getById($id)
-    //     {
-    //         $resultSet = $this->getByIdRecord($id);
-    //         $data = array();
-    //         while ($row = $resultSet->fetch_assoc()) {
-    //             $data['id'] = $row['id'];
-    //             $data['nombre'] = $row['nombre'];
-    //             $data['apellido'] = $row['apellido'];
-    // }
-    //     }
+        $id_usuario = $args["identificador"];
+        $estado = $args["estado"];
+
+        $usuario = Usuario::obtenerPor_Id($id_usuario);
+        if ($usuario != null) {
+            Usuario::cambiarEstado_Usuario($usuario, $estado);
+            $payload = json_encode(array("mensaje" => "Usuario " . $usuario->nombre_usuario . " suspendido con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "No se encontró al usuario, volver a intentar"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }
